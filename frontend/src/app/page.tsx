@@ -25,6 +25,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
+import LiveMessages from '@/components/LiveMessages';
 
 interface StockData {
   symbol: string;
@@ -172,7 +173,7 @@ export default function Home() {
           className="absolute bottom-20 right-10 w-32 h-32 bg-white/10 rounded-full blur-xl"
         />
       </section>
-
+<LiveMessages/>
       {/* Market Overview */}
       <section className="py-16 bg-muted/50">
         <div className="container mx-auto px-4">
