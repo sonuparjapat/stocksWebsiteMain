@@ -1,5 +1,5 @@
 'use client';
-
+import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { 
@@ -22,30 +22,52 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
+import LocalDate from '@/components/LocalDate';
 import { cn } from '@/lib/utils';
 
 interface IPOData {
-  id: string;
-  name: string;
-  companyName: string;
-  issueType: 'Main IPO' | 'SME IPO';
-  openDate: string;
-  closeDate: string;
-  listingDate: string;
-  priceBand: string;
-  issuePrice: number;
-  lotSize: number;
-  issueSize: number;
-  faceValue: number;
-  subscriptionRetail: number;
-  subscriptionQib: number;
-  subscriptionNii: number;
-  subscriptionTotal: number;
-  status: 'Upcoming' | 'Open' | 'Closed' | 'Listed';
-  registrarName: string;
-  leadManagers: string[];
-  description: string;
-  listingGains?: number;
+  id?: string;
+  name?: string;
+  companyName?: string;
+  company_name?: string;
+  issueType?: 'Main IPO' | 'SME IPO';
+  issue_type?: 'Main IPO' | 'SME IPO';
+  openDate?: string;
+  open_date?: string;
+  closeDate?: string;
+  close_date?: string;
+  listingDate?: string;
+  listing_date?: string;
+  priceBand?: string;
+  price_band?: string;
+  issuePrice?: number | string;
+  issue_price?: number | string;
+  lotSize?: number;
+  lot_size?: number;
+  issueSize?: number | string;
+  issue_size?: number | string;
+  faceValue?: number | string;
+  face_value?: number | string;
+  subscriptionRetail?: number | string;
+  subscription_retail?: number | string;
+  subscriptionQib?: number | string;
+  subscription_qib?: number | string;
+  subscriptionNii?: number | string;
+  subscription_nii?: number | string;
+  subscriptionTotal?: number | string;
+  subscription_total?: number | string;
+  status?: 'Upcoming' | 'Open' | 'Closed' | 'Listed';
+  registrarName?: string;
+  registrar_name?: string;
+  leadManagers?: string[];
+  lead_managers?: string[];
+  description?: string;
+  listingGains?: number | null;
+  listing_gains?: number | null;
+  raw?: any;
+  created_at?: string;
+  updated_at?: string;
+  [k: string]: any;
 }
 
 export default function IPOPage() {
@@ -55,153 +77,67 @@ export default function IPOPage() {
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [typeFilter, setTypeFilter] = useState<string>('all');
   const [loading, setLoading] = useState(true);
-
+  const [error, setError] = useState<string | null>(null);
+const [selectedIpo, setSelectedIpo] = useState<IPOData | null>(null);
+const router=useRouter()
+// handler to open details modal
+const viewDetails = (ipo: IPOData) => {
+  setSelectedIpo(ipo);
+};
+// handler to close modal
+const closeDetails = () => setSelectedIpo(null);
   useEffect(() => {
-    // Mock IPO data
-    const mockIpos: IPOData[] = [
-      {
-        id: '1',
-        name: 'TechStart India IPO',
-        companyName: 'TechStart India Limited',
-        issueType: 'Main IPO',
-        openDate: '2024-01-15',
-        closeDate: '2024-01-17',
-        listingDate: '2024-01-25',
-        priceBand: '₹215-₹225',
-        issuePrice: 220,
-        lotSize: 65,
-        issueSize: 1200000000,
-        faceValue: 10,
-        subscriptionRetail: 2.34,
-        subscriptionQib: 3.45,
-        subscriptionNii: 4.56,
-        subscriptionTotal: 3.12,
-        status: 'Open',
-        registrarName: 'Link Intime India Pvt Ltd',
-        leadManagers: ['ICICI Securities', 'SBI Capital Markets'],
-        description: 'Leading technology solutions provider specializing in cloud computing and AI services.'
-      },
-      {
-        id: '2',
-        name: 'Green Energy Ltd IPO',
-        companyName: 'Green Energy Limited',
-        issueType: 'SME IPO',
-        openDate: '2024-01-18',
-        closeDate: '2024-01-22',
-        listingDate: '2024-01-30',
-        priceBand: '₹45-₹48',
-        issuePrice: 47,
-        lotSize: 3000,
-        issueSize: 45000000,
-        faceValue: 10,
-        subscriptionRetail: 0,
-        subscriptionQib: 0,
-        subscriptionNii: 0,
-        subscriptionTotal: 0,
-        status: 'Upcoming',
-        registrarName: 'Bigshare Services Pvt Ltd',
-        leadManagers: ['Beeline Capital Advisors'],
-        description: 'Renewable energy company focused on solar and wind power projects.'
-      },
-      {
-        id: '3',
-        name: 'HealthCare Plus IPO',
-        companyName: 'HealthCare Plus Limited',
-        issueType: 'Main IPO',
-        openDate: '2024-01-10',
-        closeDate: '2024-01-12',
-        listingDate: '2024-01-20',
-        priceBand: '₹320-₹335',
-        issuePrice: 330,
-        lotSize: 45,
-        issueSize: 800000000,
-        faceValue: 10,
-        subscriptionRetail: 4.56,
-        subscriptionQib: 5.67,
-        subscriptionNii: 6.78,
-        subscriptionTotal: 5.67,
-        status: 'Closed',
-        registrarName: 'KFIN Technologies Pvt Ltd',
-        leadManagers: ['Axis Capital', 'Kotak Mahindra Capital Company'],
-        description: 'Integrated healthcare services provider with hospitals and diagnostic centers.'
-      },
-      {
-        id: '4',
-        name: 'FinTech Solutions IPO',
-        companyName: 'FinTech Solutions Limited',
-        issueType: 'SME IPO',
-        openDate: '2024-01-08',
-        closeDate: '2024-01-10',
-        listingDate: '2024-01-18',
-        priceBand: '₹78-₹82',
-        issuePrice: 80,
-        lotSize: 1600,
-        issueSize: 67000000,
-        faceValue: 10,
-        subscriptionRetail: 3.21,
-        subscriptionQib: 4.32,
-        subscriptionNii: 5.43,
-        subscriptionTotal: 4.32,
-        status: 'Listed',
-        registrarName: 'Skyline Financial Services Pvt Ltd',
-        leadManagers: ['Swastika Investmart Ltd'],
-        description: 'Digital payment solutions provider for businesses and individuals.',
-        listingGains: 15.5
-      },
-      {
-        id: '5',
-        name: 'EduTech Platforms IPO',
-        companyName: 'EduTech Platforms Limited',
-        issueType: 'Main IPO',
-        openDate: '2024-01-20',
-        closeDate: '2024-01-24',
-        listingDate: '2024-02-01',
-        priceBand: '₹180-₹190',
-        issuePrice: 185,
-        lotSize: 80,
-        issueSize: 950000000,
-        faceValue: 10,
-        subscriptionRetail: 1.23,
-        subscriptionQib: 2.34,
-        subscriptionNii: 3.45,
-        subscriptionTotal: 2.34,
-        status: 'Open',
-        registrarName: 'Intime Spectrum Registry Pvt Ltd',
-        leadManagers: ['HDFC Securities', 'IIFL Securities'],
-        description: 'Online education platform offering courses from top universities and institutions.'
+    let mounted = true;
+    async function load() {
+      try {
+        setLoading(true);
+        setError(null);
+        const res = await fetch('/api/ipos');
+        const json = await res.json();
+        if (!json?.success) {
+          throw new Error(json?.error || 'API returned error');
+        }
+        if (mounted) {
+          console.log('IPOS loaded from:', json._loadedFrom ?? 'unknown');
+          setIpos(Array.isArray(json.data) ? json.data : []);
+          setFilteredIpos(Array.isArray(json.data) ? json.data : []);
+        }
+      } catch (err: any) {
+        console.error('Failed to load IPOS', err);
+        if (mounted) setError(err?.message ?? 'Failed to load IPOs');
+      } finally {
+        if (mounted) setLoading(false);
       }
-    ];
-
-    setIpos(mockIpos);
-    setFilteredIpos(mockIpos);
-    setLoading(false);
+    }
+    load();
+    return () => { mounted = false; };
   }, []);
 
   useEffect(() => {
-    let filtered = ipos;
+    let filtered = ipos ?? [];
 
     // Search filter
     if (searchTerm) {
       filtered = filtered.filter(ipo => 
-        ipo.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        ipo.companyName.toLowerCase().includes(searchTerm.toLowerCase())
+        (String(ipo?.name ?? ipo?.company_name ?? ipo?.companyName ?? ipo?.raw?.companyName ?? '')).toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (String(ipo?.companyName ?? ipo?.company_name ?? ipo?.raw?.companyName ?? ipo?.name ?? '')).toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
 
     // Status filter
     if (statusFilter !== 'all') {
-      filtered = filtered.filter(ipo => ipo.status === statusFilter);
+      filtered = filtered.filter(ipo => (ipo?.status ?? ipo?.raw?.status) === statusFilter);
     }
 
     // Type filter
     if (typeFilter !== 'all') {
-      filtered = filtered.filter(ipo => ipo.issueType === typeFilter);
+      filtered = filtered.filter(ipo => (ipo?.issueType ?? ipo?.issue_type ?? ipo?.raw?.issueType) === typeFilter);
     }
 
     setFilteredIpos(filtered);
   }, [ipos, searchTerm, statusFilter, typeFilter]);
 
-  const getStatusIcon = (status: string) => {
+  const getStatusIcon = (status?: string) => {
     switch (status) {
       case 'Open':
         return <Clock className="w-4 h-4 text-blue-600" />;
@@ -214,7 +150,7 @@ export default function IPOPage() {
     }
   };
 
-  const getStatusColor = (status: string) => {
+  const getStatusColor = (status?: string) => {
     switch (status) {
       case 'Open':
         return 'bg-blue-100 text-blue-800 hover:bg-blue-200';
@@ -227,27 +163,20 @@ export default function IPOPage() {
     }
   };
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-IN', {
-      day: 'numeric',
-      month: 'short',
-      year: 'numeric'
-    });
-  };
-
-  const formatCurrency = (amount: number) => {
-    if (amount >= 10000000) {
-      return `₹${(amount / 10000000).toFixed(0)}Cr`;
-    } else if (amount >= 100000) {
-      return `₹${(amount / 100000).toFixed(0)}L`;
+  const formatCurrency = (amount?: number | string) => {
+    const n = Number(amount ?? 0) || 0;
+    if (n >= 10000000) {
+      return `₹${(n / 10000000).toFixed(0)}Cr`;
+    } else if (n >= 100000) {
+      return `₹${(n / 100000).toFixed(0)}L`;
     }
-    return `₹${amount.toLocaleString()}`;
+    return `₹${n.toLocaleString()}`;
   };
 
-  const upcomingIpos = filteredIpos.filter(ipo => ipo.status === 'Upcoming');
-  const openIpos = filteredIpos.filter(ipo => ipo.status === 'Open');
-  const closedIpos = filteredIpos.filter(ipo => ipo.status === 'Closed');
-  const listedIpos = filteredIpos.filter(ipo => ipo.status === 'Listed');
+  const upcomingIpos = (filteredIpos ?? []).filter(ipo => (ipo?.status ?? ipo?.raw?.status) === 'Upcoming');
+  const openIpos = (filteredIpos ?? []).filter(ipo => (ipo?.status ?? ipo?.raw?.status) === 'Open');
+  const closedIpos = (filteredIpos ?? []).filter(ipo => (ipo?.status ?? ipo?.raw?.status) === 'Closed');
+  const listedIpos = (filteredIpos ?? []).filter(ipo => (ipo?.status ?? ipo?.raw?.status) === 'Listed');
 
   return (
     <div className="min-h-screen bg-muted/20">
@@ -315,535 +244,661 @@ export default function IPOPage() {
       {/* IPOs Content */}
       <section className="py-8">
         <div className="container mx-auto px-4">
-          <Tabs defaultValue="all" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-5">
-              <TabsTrigger value="all">
-                All ({filteredIpos.length})
-              </TabsTrigger>
-              <TabsTrigger value="upcoming">
-                Upcoming ({upcomingIpos.length})
-              </TabsTrigger>
-              <TabsTrigger value="open">
-                Open ({openIpos.length})
-              </TabsTrigger>
-              <TabsTrigger value="closed">
-                Closed ({closedIpos.length})
-              </TabsTrigger>
-              <TabsTrigger value="listed">
-                Listed ({listedIpos.length})
-              </TabsTrigger>
-            </TabsList>
+          {loading ? (
+            <div className="p-8 text-center">Loading IPOs…</div>
+          ) : error ? (
+            <div className="p-8 text-center">
+              <p className="text-lg font-medium mb-3">Something went wrong</p>
+              <p className="text-sm text-muted-foreground mb-4">{error}</p>
+              <Button onClick={() => { setError(null); setLoading(true); window.location.reload(); }}>
+                Retry
+              </Button>
+            </div>
+          ) : (
+            <Tabs defaultValue="all" className="space-y-6">
+              <TabsList className="grid w-full grid-cols-5">
+                <TabsTrigger value="all">
+                  All ({filteredIpos?.length ?? 0})
+                </TabsTrigger>
+                <TabsTrigger value="upcoming">
+                  Upcoming ({upcomingIpos?.length ?? 0})
+                </TabsTrigger>
+                <TabsTrigger value="open">
+                  Open ({openIpos?.length ?? 0})
+                </TabsTrigger>
+                <TabsTrigger value="closed">
+                  Closed ({closedIpos?.length ?? 0})
+                </TabsTrigger>
+                <TabsTrigger value="listed">
+                  Listed ({listedIpos?.length ?? 0})
+                </TabsTrigger>
+              </TabsList>
 
-            <TabsContent value="all">
-              <div className="grid gap-6">
-                {filteredIpos.map((ipo, index) => (
-                  <motion.div
-                    key={ipo.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.1 }}
-                  >
-                    <Card className="hover:shadow-lg transition-all duration-300">
-                      <CardContent className="p-6">
-                        <div className="flex flex-col lg:flex-row gap-6">
-                          {/* Left Section - Company Info */}
-                          <div className="flex-1">
-                            <div className="flex items-start justify-between mb-4">
-                              <div>
-                                <h3 className="text-xl font-semibold mb-2">{ipo.name}</h3>
-                                <p className="text-muted-foreground mb-3">{ipo.companyName}</p>
-                                <div className="flex items-center gap-3">
-                                  <Badge className={getStatusColor(ipo.status)}>
-                                    <div className="flex items-center gap-1">
-                                      {getStatusIcon(ipo.status)}
-                                      {ipo.status}
+              <TabsContent value="all">
+                <div className="grid gap-6">
+                  {filteredIpos?.map((ipo, index) => {
+                    // Normalized getters (try multiple shapes)
+                    const raw = ipo?.raw ?? {};
+                    const id = ipo?.id ?? raw?.id ?? '';
+                    const name = ipo?.name ?? ipo?.company_name ?? ipo?.companyName ?? raw?.name ?? '';
+                    const companyName = ipo?.companyName ?? ipo?.company_name ?? raw?.companyName ?? '';
+                    const issueType = ipo?.issueType ?? ipo?.issue_type ?? raw?.issueType ?? 'Main IPO';
+                    const openDate = ipo?.openDate ?? ipo?.open_date ?? raw?.openDate ?? null;
+                    const closeDate = ipo?.closeDate ?? ipo?.close_date ?? raw?.closeDate ?? null;
+                    const listingDate = ipo?.listingDate ?? ipo?.listing_date ?? raw?.listingDate ?? null;
+                    const priceBand = ipo?.priceBand ?? ipo?.price_band ?? raw?.priceBand ?? '';
+                    const issuePrice = Number(ipo?.issuePrice ?? ipo?.issue_price ?? raw?.issuePrice ?? 0) || 0;
+                    const lotSize = Number(ipo?.lotSize ?? ipo?.lot_size ?? raw?.lotSize ?? 0) || 0;
+                    const issueSize = Number(ipo?.issueSize ?? ipo?.issue_size ?? raw?.issueSize ?? 0) || 0;
+                    const faceValue = Number(ipo?.faceValue ?? ipo?.face_value ?? raw?.faceValue ?? 0) || 0;
+
+                    const subscriptionRetail = Number(ipo?.subscriptionRetail ?? ipo?.subscription_retail ?? raw?.subscriptionRetail ?? 0) || 0;
+                    const subscriptionQib = Number(ipo?.subscriptionQib ?? ipo?.subscription_qib ?? raw?.subscriptionQib ?? 0) || 0;
+                    const subscriptionNii = Number(ipo?.subscriptionNii ?? ipo?.subscription_nii ?? raw?.subscriptionNii ?? 0) || 0;
+                    const subscriptionTotal = Number(ipo?.subscriptionTotal ?? ipo?.subscription_total ?? raw?.subscriptionTotal ?? 0) || 0;
+
+                    const status = ipo?.status ?? raw?.status ?? 'Upcoming';
+                    const registrarName = ipo?.registrarName ?? ipo?.registrar_name ?? raw?.registrarName ?? '';
+                    const leadManagers = ipo?.leadManagers ?? ipo?.lead_managers ?? raw?.leadManagers ?? [];
+                    const description = ipo?.description ?? raw?.description ?? '';
+                    const listingGains = ipo?.listingGains ?? ipo?.listing_gains ?? raw?.listingGains ?? null;
+
+                    return (
+                      <motion.div
+                        key={id ?? index}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: index * 0.1 }}
+                      >
+                        <Card className="hover:shadow-lg transition-all duration-300">
+                          <CardContent className="p-6">
+                            <div className="flex flex-col lg:flex-row gap-6">
+                              {/* Left Section - Company Info */}
+                              <div className="flex-1">
+                                <div className="flex items-start justify-between mb-4">
+                                  <div>
+                                    <h3 className="text-xl font-semibold mb-2">{name}</h3>
+                                    <p className="text-muted-foreground mb-3">{companyName}</p>
+                                    <div className="flex items-center gap-3">
+                                      <Badge className={getStatusColor(status)}>
+                                        <div className="flex items-center gap-1">
+                                          {getStatusIcon(status)}
+                                          {status}
+                                        </div>
+                                      </Badge>
+                                      <Badge variant="outline">{issueType}</Badge>
                                     </div>
-                                  </Badge>
-                                  <Badge variant="outline">{ipo.issueType}</Badge>
+                                  </div>
+                                  <Building2 className="w-8 h-8 text-muted-foreground" />
                                 </div>
-                              </div>
-                              <Building2 className="w-8 h-8 text-muted-foreground" />
-                            </div>
-                            
-                            <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
-                              {ipo.description}
-                            </p>
+                                
+                                <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
+                                  {description}
+                                </p>
 
-                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                              <div>
-                                <span className="text-muted-foreground">Price Band:</span>
-                                <p className="font-medium">{ipo.priceBand}</p>
+                                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                                  <div>
+                                    <span className="text-muted-foreground">Price Band:</span>
+                                    <p className="font-medium">{priceBand}</p>
+                                  </div>
+                                  <div>
+                                    <span className="text-muted-foreground">Issue Size:</span>
+                                    <p className="font-medium">{formatCurrency(issueSize)}</p>
+                                  </div>
+                                  <div>
+                                    <span className="text-muted-foreground">Lot Size:</span>
+                                    <p className="font-medium">{lotSize} shares</p>
+                                  </div>
+                                  <div>
+                                    <span className="text-muted-foreground">Face Value:</span>
+                                    <p className="font-medium">₹{faceValue}</p>
+                                  </div>
+                                </div>
                               </div>
-                              <div>
-                                <span className="text-muted-foreground">Issue Size:</span>
-                                <p className="font-medium">{formatCurrency(ipo.issueSize)}</p>
-                              </div>
-                              <div>
-                                <span className="text-muted-foreground">Lot Size:</span>
-                                <p className="font-medium">{ipo.lotSize} shares</p>
-                              </div>
-                              <div>
-                                <span className="text-muted-foreground">Face Value:</span>
-                                <p className="font-medium">₹{ipo.faceValue}</p>
-                              </div>
-                            </div>
-                          </div>
 
-                          {/* Right Section - Dates and Actions */}
-                          <div className="lg:w-80 space-y-4">
-                            <div className="bg-muted/50 rounded-lg p-4">
-                              <h4 className="font-medium mb-3 flex items-center gap-2">
-                                <Calendar className="w-4 h-4" />
-                                Important Dates
-                              </h4>
-                              <div className="space-y-2 text-sm">
-                                <div className="flex justify-between">
-                                  <span className="text-muted-foreground">Open:</span>
-                                  <span className="font-medium">{formatDate(ipo.openDate)}</span>
-                                </div>
-                                <div className="flex justify-between">
-                                  <span className="text-muted-foreground">Close:</span>
-                                  <span className="font-medium">{formatDate(ipo.closeDate)}</span>
-                                </div>
-                                <div className="flex justify-between">
-                                  <span className="text-muted-foreground">Listing:</span>
-                                  <span className="font-medium">{formatDate(ipo.listingDate)}</span>
-                                </div>
-                              </div>
-                            </div>
-
-                            {ipo.status === 'Open' && ipo.subscriptionTotal > 0 && (
-                              <div className="space-y-2">
-                                <div className="flex justify-between items-center">
-                                  <span className="text-sm font-medium">Subscription</span>
-                                  <span className="text-sm font-bold">{ipo.subscriptionTotal.toFixed(2)}x</span>
-                                </div>
-                                <Progress value={Math.min(ipo.subscriptionTotal * 20, 100)} className="h-2" />
-                                <div className="grid grid-cols-3 gap-2 text-xs text-muted-foreground">
-                                  <div>RII: {ipo.subscriptionRetail.toFixed(2)}x</div>
-                                  <div>NII: {ipo.subscriptionNii.toFixed(2)}x</div>
-                                  <div>QIB: {ipo.subscriptionQib.toFixed(2)}x</div>
-                                </div>
-                              </div>
-                            )}
-
-                            {ipo.status === 'Listed' && ipo.listingGains && (
-                              <div className="bg-green-50 border border-green-200 rounded-lg p-3">
-                                <div className="flex items-center gap-2 text-green-800">
-                                  <TrendingUp className="w-4 h-4" />
-                                  <span className="font-medium">Listing Gains</span>
-                                </div>
-                                <p className="text-green-700 font-bold text-lg">+{ipo.listingGains}%</p>
-                              </div>
-                            )}
-
-                            <Button className="w-full">
-                              View Details
-                              <ArrowRight className="w-4 h-4 ml-2" />
-                            </Button>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </motion.div>
-                ))}
-              </div>
-            </TabsContent>
-
-            <TabsContent value="upcoming">
-              <div className="grid gap-6">
-                {upcomingIpos.map((ipo, index) => (
-                  <motion.div
-                    key={ipo.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.1 }}
-                  >
-                    <Card className="hover:shadow-lg transition-all duration-300">
-                      <CardContent className="p-6">
-                        <div className="flex flex-col lg:flex-row gap-6">
-                          <div className="flex-1">
-                            <div className="flex items-start justify-between mb-4">
-                              <div>
-                                <h3 className="text-xl font-semibold mb-2">{ipo.name}</h3>
-                                <p className="text-muted-foreground mb-3">{ipo.companyName}</p>
-                                <div className="flex items-center gap-3">
-                                  <Badge className={getStatusColor(ipo.status)}>
-                                    <div className="flex items-center gap-1">
-                                      {getStatusIcon(ipo.status)}
-                                      {ipo.status}
+                              {/* Right Section - Dates and Actions */}
+                              <div className="lg:w-80 space-y-4">
+                                <div className="bg-muted/50 rounded-lg p-4">
+                                  <h4 className="font-medium mb-3 flex items-center gap-2">
+                                    <Calendar className="w-4 h-4" />
+                                    Important Dates
+                                  </h4>
+                                  <div className="space-y-2 text-sm">
+                                    <div className="flex justify-between">
+                                      <span className="text-muted-foreground">Open:</span>
+                                      <span className="font-medium">
+                                        <LocalDate iso={openDate ?? undefined} options={{ day: 'numeric', month: 'short', year: 'numeric' }} />
+                                      </span>
                                     </div>
-                                  </Badge>
-                                  <Badge variant="outline">{ipo.issueType}</Badge>
-                                </div>
-                              </div>
-                              <Building2 className="w-8 h-8 text-muted-foreground" />
-                            </div>
-                            
-                            <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
-                              {ipo.description}
-                            </p>
-
-                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                              <div>
-                                <span className="text-muted-foreground">Price Band:</span>
-                                <p className="font-medium">{ipo.priceBand}</p>
-                              </div>
-                              <div>
-                                <span className="text-muted-foreground">Issue Size:</span>
-                                <p className="font-medium">{formatCurrency(ipo.issueSize)}</p>
-                              </div>
-                              <div>
-                                <span className="text-muted-foreground">Lot Size:</span>
-                                <p className="font-medium">{ipo.lotSize} shares</p>
-                              </div>
-                              <div>
-                                <span className="text-muted-foreground">Face Value:</span>
-                                <p className="font-medium">₹{ipo.faceValue}</p>
-                              </div>
-                            </div>
-                          </div>
-
-                          <div className="lg:w-80 space-y-4">
-                            <div className="bg-muted/50 rounded-lg p-4">
-                              <h4 className="font-medium mb-3 flex items-center gap-2">
-                                <Calendar className="w-4 h-4" />
-                                Important Dates
-                              </h4>
-                              <div className="space-y-2 text-sm">
-                                <div className="flex justify-between">
-                                  <span className="text-muted-foreground">Open:</span>
-                                  <span className="font-medium">{formatDate(ipo.openDate)}</span>
-                                </div>
-                                <div className="flex justify-between">
-                                  <span className="text-muted-foreground">Close:</span>
-                                  <span className="font-medium">{formatDate(ipo.closeDate)}</span>
-                                </div>
-                                <div className="flex justify-between">
-                                  <span className="text-muted-foreground">Listing:</span>
-                                  <span className="font-medium">{formatDate(ipo.listingDate)}</span>
-                                </div>
-                              </div>
-                            </div>
-
-                            <Button className="w-full">
-                              View Details
-                              <ArrowRight className="w-4 h-4 ml-2" />
-                            </Button>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </motion.div>
-                ))}
-              </div>
-            </TabsContent>
-
-            <TabsContent value="open">
-              <div className="grid gap-6">
-                {openIpos.map((ipo, index) => (
-                  <motion.div
-                    key={ipo.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.1 }}
-                  >
-                    <Card className="hover:shadow-lg transition-all duration-300 border-blue-200">
-                      <CardContent className="p-6">
-                        <div className="flex flex-col lg:flex-row gap-6">
-                          <div className="flex-1">
-                            <div className="flex items-start justify-between mb-4">
-                              <div>
-                                <h3 className="text-xl font-semibold mb-2">{ipo.name}</h3>
-                                <p className="text-muted-foreground mb-3">{ipo.companyName}</p>
-                                <div className="flex items-center gap-3">
-                                  <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-200">
-                                    <div className="flex items-center gap-1">
-                                      <Clock className="w-4 h-4" />
-                                      {ipo.status}
+                                    <div className="flex justify-between">
+                                      <span className="text-muted-foreground">Close:</span>
+                                      <LocalDate iso={closeDate ?? undefined} options={{ day: 'numeric', month: 'short', year: 'numeric' }} />
                                     </div>
-                                  </Badge>
-                                  <Badge variant="outline">{ipo.issueType}</Badge>
-                                </div>
-                              </div>
-                              <Building2 className="w-8 h-8 text-muted-foreground" />
-                            </div>
-                            
-                            <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
-                              {ipo.description}
-                            </p>
-
-                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                              <div>
-                                <span className="text-muted-foreground">Price Band:</span>
-                                <p className="font-medium">{ipo.priceBand}</p>
-                              </div>
-                              <div>
-                                <span className="text-muted-foreground">Issue Size:</span>
-                                <p className="font-medium">{formatCurrency(ipo.issueSize)}</p>
-                              </div>
-                              <div>
-                                <span className="text-muted-foreground">Lot Size:</span>
-                                <p className="font-medium">{ipo.lotSize} shares</p>
-                              </div>
-                              <div>
-                                <span className="text-muted-foreground">Face Value:</span>
-                                <p className="font-medium">₹{ipo.faceValue}</p>
-                              </div>
-                            </div>
-                          </div>
-
-                          <div className="lg:w-80 space-y-4">
-                            <div className="bg-muted/50 rounded-lg p-4">
-                              <h4 className="font-medium mb-3 flex items-center gap-2">
-                                <Calendar className="w-4 h-4" />
-                                Important Dates
-                              </h4>
-                              <div className="space-y-2 text-sm">
-                                <div className="flex justify-between">
-                                  <span className="text-muted-foreground">Open:</span>
-                                  <span className="font-medium">{formatDate(ipo.openDate)}</span>
-                                </div>
-                                <div className="flex justify-between">
-                                  <span className="text-muted-foreground">Close:</span>
-                                  <span className="font-medium">{formatDate(ipo.closeDate)}</span>
-                                </div>
-                                <div className="flex justify-between">
-                                  <span className="text-muted-foreground">Listing:</span>
-                                  <span className="font-medium">{formatDate(ipo.listingDate)}</span>
-                                </div>
-                              </div>
-                            </div>
-
-                            <div className="space-y-2">
-                              <div className="flex justify-between items-center">
-                                <span className="text-sm font-medium">Subscription</span>
-                                <span className="text-sm font-bold">{ipo.subscriptionTotal.toFixed(2)}x</span>
-                              </div>
-                              <Progress value={Math.min(ipo.subscriptionTotal * 20, 100)} className="h-2" />
-                              <div className="grid grid-cols-3 gap-2 text-xs text-muted-foreground">
-                                <div>RII: {ipo.subscriptionRetail.toFixed(2)}x</div>
-                                <div>NII: {ipo.subscriptionNii.toFixed(2)}x</div>
-                                <div>QIB: {ipo.subscriptionQib.toFixed(2)}x</div>
-                              </div>
-                            </div>
-
-                            <Button className="w-full bg-blue-600 hover:bg-blue-700">
-                              Apply Now
-                              <ArrowRight className="w-4 h-4 ml-2" />
-                            </Button>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </motion.div>
-                ))}
-              </div>
-            </TabsContent>
-
-            <TabsContent value="closed">
-              <div className="grid gap-6">
-                {closedIpos.map((ipo, index) => (
-                  <motion.div
-                    key={ipo.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.1 }}
-                  >
-                    <Card className="hover:shadow-lg transition-all duration-300">
-                      <CardContent className="p-6">
-                        <div className="flex flex-col lg:flex-row gap-6">
-                          <div className="flex-1">
-                            <div className="flex items-start justify-between mb-4">
-                              <div>
-                                <h3 className="text-xl font-semibold mb-2">{ipo.name}</h3>
-                                <p className="text-muted-foreground mb-3">{ipo.companyName}</p>
-                                <div className="flex items-center gap-3">
-                                  <Badge className={getStatusColor(ipo.status)}>
-                                    <div className="flex items-center gap-1">
-                                      {getStatusIcon(ipo.status)}
-                                      {ipo.status}
+                                    <div className="flex justify-between">
+                                      <span className="text-muted-foreground">Listing:</span>
+                                      <LocalDate iso={listingDate ?? undefined} options={{ day: 'numeric', month: 'short', year: 'numeric' }} />
                                     </div>
-                                  </Badge>
-                                  <Badge variant="outline">{ipo.issueType}</Badge>
+                                  </div>
                                 </div>
-                              </div>
-                              <Building2 className="w-8 h-8 text-muted-foreground" />
-                            </div>
-                            
-                            <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
-                              {ipo.description}
-                            </p>
 
-                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                              <div>
-                                <span className="text-muted-foreground">Price Band:</span>
-                                <p className="font-medium">{ipo.priceBand}</p>
-                              </div>
-                              <div>
-                                <span className="text-muted-foreground">Issue Size:</span>
-                                <p className="font-medium">{formatCurrency(ipo.issueSize)}</p>
-                              </div>
-                              <div>
-                                <span className="text-muted-foreground">Lot Size:</span>
-                                <p className="font-medium">{ipo.lotSize} shares</p>
-                              </div>
-                              <div>
-                                <span className="text-muted-foreground">Face Value:</span>
-                                <p className="font-medium">₹{ipo.faceValue}</p>
-                              </div>
-                            </div>
-                          </div>
-
-                          <div className="lg:w-80 space-y-4">
-                            <div className="bg-muted/50 rounded-lg p-4">
-                              <h4 className="font-medium mb-3 flex items-center gap-2">
-                                <Calendar className="w-4 h-4" />
-                                Important Dates
-                              </h4>
-                              <div className="space-y-2 text-sm">
-                                <div className="flex justify-between">
-                                  <span className="text-muted-foreground">Open:</span>
-                                  <span className="font-medium">{formatDate(ipo.openDate)}</span>
-                                </div>
-                                <div className="flex justify-between">
-                                  <span className="text-muted-foreground">Close:</span>
-                                  <span className="font-medium">{formatDate(ipo.closeDate)}</span>
-                                </div>
-                                <div className="flex justify-between">
-                                  <span className="text-muted-foreground">Listing:</span>
-                                  <span className="font-medium">{formatDate(ipo.listingDate)}</span>
-                                </div>
-                              </div>
-                            </div>
-
-                            <div className="space-y-2">
-                              <div className="flex justify-between items-center">
-                                <span className="text-sm font-medium">Subscription</span>
-                                <span className="text-sm font-bold">{ipo.subscriptionTotal.toFixed(2)}x</span>
-                              </div>
-                              <Progress value={Math.min(ipo.subscriptionTotal * 20, 100)} className="h-2" />
-                              <div className="grid grid-cols-3 gap-2 text-xs text-muted-foreground">
-                                <div>RII: {ipo.subscriptionRetail.toFixed(2)}x</div>
-                                <div>NII: {ipo.subscriptionNii.toFixed(2)}x</div>
-                                <div>QIB: {ipo.subscriptionQib.toFixed(2)}x</div>
-                              </div>
-                            </div>
-
-                            <Button className="w-full">
-                              View Details
-                              <ArrowRight className="w-4 h-4 ml-2" />
-                            </Button>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </motion.div>
-                ))}
-              </div>
-            </TabsContent>
-
-            <TabsContent value="listed">
-              <div className="grid gap-6">
-                {listedIpos.map((ipo, index) => (
-                  <motion.div
-                    key={ipo.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.1 }}
-                  >
-                    <Card className="hover:shadow-lg transition-all duration-300 border-green-200">
-                      <CardContent className="p-6">
-                        <div className="flex flex-col lg:flex-row gap-6">
-                          <div className="flex-1">
-                            <div className="flex items-start justify-between mb-4">
-                              <div>
-                                <h3 className="text-xl font-semibold mb-2">{ipo.name}</h3>
-                                <p className="text-muted-foreground mb-3">{ipo.companyName}</p>
-                                <div className="flex items-center gap-3">
-                                  <Badge className="bg-green-100 text-green-800 hover:bg-green-200">
-                                    <div className="flex items-center gap-1">
-                                      <CheckCircle className="w-4 h-4" />
-                                      {ipo.status}
+                                {(status === 'Open' && subscriptionTotal > 0) && (
+                                  <div className="space-y-2">
+                                    <div className="flex justify-between items-center">
+                                      <span className="text-sm font-medium">Subscription</span>
+                                      <span className="text-sm font-bold">{subscriptionTotal.toFixed(2)}x</span>
                                     </div>
-                                  </Badge>
-                                  <Badge variant="outline">{ipo.issueType}</Badge>
-                                </div>
-                              </div>
-                              <Building2 className="w-8 h-8 text-muted-foreground" />
-                            </div>
-                            
-                            <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
-                              {ipo.description}
-                            </p>
+                                    <Progress value={Math.min(subscriptionTotal * 20, 100)} className="h-2" />
+                                    <div className="grid grid-cols-3 gap-2 text-xs text-muted-foreground">
+                                      <div>RII: {subscriptionRetail.toFixed(2)}x</div>
+                                      <div>NII: {subscriptionNii.toFixed(2)}x</div>
+                                      <div>QIB: {subscriptionQib.toFixed(2)}x</div>
+                                    </div>
+                                  </div>
+                                )}
 
-                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                              <div>
-                                <span className="text-muted-foreground">Issue Price:</span>
-                                <p className="font-medium">₹{ipo.issuePrice}</p>
-                              </div>
-                              <div>
-                                <span className="text-muted-foreground">Issue Size:</span>
-                                <p className="font-medium">{formatCurrency(ipo.issueSize)}</p>
-                              </div>
-                              <div>
-                                <span className="text-muted-foreground">Lot Size:</span>
-                                <p className="font-medium">{ipo.lotSize} shares</p>
-                              </div>
-                              <div>
-                                <span className="text-muted-foreground">Face Value:</span>
-                                <p className="font-medium">₹{ipo.faceValue}</p>
+                                {(status === 'Listed' && listingGains != null) && (
+                                  <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+                                    <div className="flex items-center gap-2 text-green-800">
+                                      <TrendingUp className="w-4 h-4" />
+                                      <span className="font-medium">Listing Gains</span>
+                                    </div>
+                                    <p className="text-green-700 font-bold text-lg">+{listingGains}%</p>
+                                  </div>
+                                )}
+
+ <Button onClick={() => router.push(`/ipo/${ipo.id}`)} className="w-full">
+  View Details
+  <ArrowRight className="w-4 h-4 ml-2" />
+</Button>
                               </div>
                             </div>
-                          </div>
+                          </CardContent>
+                        </Card>
+                      </motion.div>
+                    );
+                  })}
+                </div>
+              </TabsContent>
 
-                          <div className="lg:w-80 space-y-4">
-                            <div className="bg-muted/50 rounded-lg p-4">
-                              <h4 className="font-medium mb-3 flex items-center gap-2">
-                                <Calendar className="w-4 h-4" />
-                                Important Dates
-                              </h4>
-                              <div className="space-y-2 text-sm">
-                                <div className="flex justify-between">
-                                  <span className="text-muted-foreground">Open:</span>
-                                  <span className="font-medium">{formatDate(ipo.openDate)}</span>
+              {/* upcoming, open, closed, listed tabs reuse same rendering style */}
+              <TabsContent value="upcoming">
+                <div className="grid gap-6">
+                  {upcomingIpos?.map((ipo, index) => {
+                    const raw = ipo?.raw ?? {};
+                    const id = ipo?.id ?? raw?.id ?? index;
+                    const name = ipo?.name ?? ipo?.company_name ?? ipo?.companyName ?? raw?.name ?? '';
+                    const companyName = ipo?.companyName ?? ipo?.company_name ?? raw?.companyName ?? '';
+                    // reuse same normalization as above for dates/numbers
+                    const openDate = ipo?.openDate ?? ipo?.open_date ?? raw?.openDate ?? null;
+                    const closeDate = ipo?.closeDate ?? ipo?.close_date ?? raw?.closeDate ?? null;
+                    const listingDate = ipo?.listingDate ?? ipo?.listing_date ?? raw?.listingDate ?? null;
+                    const subscriptionTotal = Number(ipo?.subscriptionTotal ?? ipo?.subscription_total ?? raw?.subscriptionTotal ?? 0) || 0;
+                    const subscriptionRetail = Number(ipo?.subscriptionRetail ?? ipo?.subscription_retail ?? raw?.subscriptionRetail ?? 0) || 0;
+                    const subscriptionNii = Number(ipo?.subscriptionNii ?? ipo?.subscription_nii ?? raw?.subscriptionNii ?? 0) || 0;
+                    const subscriptionQib = Number(ipo?.subscriptionQib ?? ipo?.subscription_qib ?? raw?.subscriptionQib ?? 0) || 0;
+                    const status = ipo?.status ?? raw?.status ?? 'Upcoming';
+                    const description = ipo?.description ?? raw?.description ?? '';
+
+                    return (
+                      <motion.div key={id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.1 }}>
+                        <Card className="hover:shadow-lg transition-all duration-300">
+                          <CardContent className="p-6">
+                            <div className="flex flex-col lg:flex-row gap-6">
+                              <div className="flex-1">
+                                <div className="flex items-start justify-between mb-4">
+                                  <div>
+                                    <h3 className="text-xl font-semibold mb-2">{name}</h3>
+                                    <p className="text-muted-foreground mb-3">{companyName}</p>
+                                    <div className="flex items-center gap-3">
+                                      <Badge className={getStatusColor(status)}>
+                                        <div className="flex items-center gap-1">
+                                          {getStatusIcon(status)}
+                                          {status}
+                                        </div>
+                                      </Badge>
+                                    </div>
+                                  </div>
+                                  <Building2 className="w-8 h-8 text-muted-foreground" />
                                 </div>
-                                <div className="flex justify-between">
-                                  <span className="text-muted-foreground">Close:</span>
-                                  <span className="font-medium">{formatDate(ipo.closeDate)}</span>
+
+                                <p className="text-sm text-muted-foreground mb-4 line-clamp-2">{description}</p>
+                                {/* simplified info — you can expand like above if needed */}
+                              </div>
+
+                              <div className="lg:w-80 space-y-4">
+                                <div className="bg-muted/50 rounded-lg p-4">
+                                  <h4 className="font-medium mb-3 flex items-center gap-2">
+                                    <Calendar className="w-4 h-4" />
+                                    Important Dates
+                                  </h4>
+                                  <div className="space-y-2 text-sm">
+                                    <div className="flex justify-between">
+                                      <span className="text-muted-foreground">Open:</span>
+                                      <LocalDate iso={openDate ?? undefined} options={{ day: 'numeric', month: 'short', year: 'numeric' }} />
+                                    </div>
+                                    <div className="flex justify-between">
+                                      <span className="text-muted-foreground">Close:</span>
+                                      <LocalDate iso={closeDate ?? undefined} options={{ day: 'numeric', month: 'short', year: 'numeric' }} />
+                                    </div>
+                                    <div className="flex justify-between">
+                                      <span className="text-muted-foreground">Listing:</span>
+                                      <LocalDate iso={listingDate ?? undefined} options={{ day: 'numeric', month: 'short', year: 'numeric' }} />
+                                    </div>
+                                  </div>
                                 </div>
-                                <div className="flex justify-between">
-                                  <span className="text-muted-foreground">Listing:</span>
-                                  <span className="font-medium">{formatDate(ipo.listingDate)}</span>
-                                </div>
+
+                            <Button onClick={() => router.push(`/ipo/${ipo.id}`)} className="w-full">
+  View Details
+  <ArrowRight className="w-4 h-4 ml-2" />
+</Button>
                               </div>
                             </div>
+                          </CardContent>
+                        </Card>
+                      </motion.div>
+                    );
+                  })}
+                </div>
+              </TabsContent>
 
-                            {ipo.listingGains && (
-                              <div className="bg-green-50 border border-green-200 rounded-lg p-3">
-                                <div className="flex items-center gap-2 text-green-800">
-                                  <TrendingUp className="w-4 h-4" />
-                                  <span className="font-medium">Listing Gains</span>
+              <TabsContent value="open">
+                <div className="grid gap-6">
+                  {openIpos?.map((ipo, index) => {
+                    // reuse normalization pattern: keep it concise here
+                    const raw = ipo?.raw ?? {};
+                    const id = ipo?.id ?? raw?.id ?? index;
+                    const name = ipo?.name ?? ipo?.company_name ?? ipo?.companyName ?? raw?.name ?? '';
+                    const companyName = ipo?.companyName ?? ipo?.company_name ?? raw?.companyName ?? '';
+                    const openDate = ipo?.openDate ?? ipo?.open_date ?? raw?.openDate ?? null;
+                    const closeDate = ipo?.closeDate ?? ipo?.close_date ?? raw?.closeDate ?? null;
+                    const listingDate = ipo?.listingDate ?? ipo?.listing_date ?? raw?.listingDate ?? null;
+                    const subscriptionTotal = Number(ipo?.subscriptionTotal ?? ipo?.subscription_total ?? raw?.subscriptionTotal ?? 0) || 0;
+                    const subscriptionRetail = Number(ipo?.subscriptionRetail ?? ipo?.subscription_retail ?? raw?.subscriptionRetail ?? 0) || 0;
+                    const subscriptionNii = Number(ipo?.subscriptionNii ?? ipo?.subscription_nii ?? raw?.subscriptionNii ?? 0) || 0;
+                    const subscriptionQib = Number(ipo?.subscriptionQib ?? ipo?.subscription_qib ?? raw?.subscriptionQib ?? 0) || 0;
+                    const issueSize = Number(ipo?.issueSize ?? ipo?.issue_size ?? raw?.issueSize ?? 0) || 0;
+                    const lotSize = Number(ipo?.lotSize ?? ipo?.lot_size ?? raw?.lotSize ?? 0) || 0;
+                    const faceValue = Number(ipo?.faceValue ?? ipo?.face_value ?? raw?.faceValue ?? 0) || 0;
+                    const description = ipo?.description ?? raw?.description ?? '';
+
+                    return (
+                      <motion.div key={id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.1 }}>
+                        <Card className="hover:shadow-lg transition-all duration-300 border-blue-200">
+                          <CardContent className="p-6">
+                            <div className="flex flex-col lg:flex-row gap-6">
+                              <div className="flex-1">
+                                <div className="flex items-start justify-between mb-4">
+                                  <div>
+                                    <h3 className="text-xl font-semibold mb-2">{name}</h3>
+                                    <p className="text-muted-foreground mb-3">{companyName}</p>
+                                    <div className="flex items-center gap-3">
+                                      <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-200">
+                                        <div className="flex items-center gap-1">
+                                          <Clock className="w-4 h-4" />
+                                          {(ipo?.status ?? raw?.status) ?? 'Open'}
+                                        </div>
+                                      </Badge>
+                                      <Badge variant="outline">{ipo?.issueType ?? ipo?.issue_type ?? raw?.issueType ?? 'Main IPO'}</Badge>
+                                    </div>
+                                  </div>
+                                  <Building2 className="w-8 h-8 text-muted-foreground" />
                                 </div>
-                                <p className="text-green-700 font-bold text-lg">+{ipo.listingGains}%</p>
-                              </div>
-                            )}
+                                
+                                <p className="text-sm text-muted-foreground mb-4 line-clamp-2">{description}</p>
 
-                            <Button className="w-full">
-                              View Details
-                              <ArrowRight className="w-4 h-4 ml-2" />
-                            </Button>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </motion.div>
-                ))}
-              </div>
-            </TabsContent>
-          </Tabs>
+                                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                                  <div>
+                                    <span className="text-muted-foreground">Price Band:</span>
+                                    <p className="font-medium">{ipo?.priceBand ?? ipo?.price_band ?? raw?.priceBand ?? '—'}</p>
+                                  </div>
+                                  <div>
+                                    <span className="text-muted-foreground">Issue Size:</span>
+                                    <p className="font-medium">{formatCurrency(issueSize)}</p>
+                                  </div>
+                                  <div>
+                                    <span className="text-muted-foreground">Lot Size:</span>
+                                    <p className="font-medium">{lotSize} shares</p>
+                                  </div>
+                                  <div>
+                                    <span className="text-muted-foreground">Face Value:</span>
+                                    <p className="font-medium">₹{faceValue}</p>
+                                  </div>
+                                </div>
+                              </div>
+
+                              <div className="lg:w-80 space-y-4">
+                                <div className="bg-muted/50 rounded-lg p-4">
+                                  <h4 className="font-medium mb-3 flex items-center gap-2">
+                                    <Calendar className="w-4 h-4" />
+                                    Important Dates
+                                  </h4>
+                                  <div className="space-y-2 text-sm">
+                                    <div className="flex justify-between">
+                                      <span className="text-muted-foreground">Open:</span>
+                                      <LocalDate iso={openDate ?? undefined} options={{ day: 'numeric', month: 'short', year: 'numeric' }} />
+                                    </div>
+                                    <div className="flex justify-between">
+                                      <span className="text-muted-foreground">Close:</span>
+                                      <LocalDate iso={closeDate ?? undefined} options={{ day: 'numeric', month: 'short', year: 'numeric' }} />
+                                    </div>
+                                    <div className="flex justify-between">
+                                      <span className="text-muted-foreground">Listing:</span>
+                                      <LocalDate iso={listingDate ?? undefined} options={{ day: 'numeric', month: 'short', year: 'numeric' }} />
+                                    </div>
+                                  </div>
+                                </div>
+
+                                <div className="space-y-2">
+                                  <div className="flex justify-between items-center">
+                                    <span className="text-sm font-medium">Subscription</span>
+                                    <span className="text-sm font-bold">{subscriptionTotal.toFixed(2)}x</span>
+                                  </div>
+                                  <Progress value={Math.min(subscriptionTotal * 20, 100)} className="h-2" />
+                                  <div className="grid grid-cols-3 gap-2 text-xs text-muted-foreground">
+                                    <div>RII: {subscriptionRetail.toFixed(2)}x</div>
+                                    <div>NII: {subscriptionNii.toFixed(2)}x</div>
+                                    <div>QIB: {subscriptionQib.toFixed(2)}x</div>
+                                  </div>
+                                </div>
+
+                                <Button className="w-full bg-blue-600 hover:bg-blue-700">
+                                  Apply Now
+                                  <ArrowRight className="w-4 h-4 ml-2" />
+                                </Button>
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      </motion.div>
+                    );
+                  })}
+                </div>
+              </TabsContent>
+
+              <TabsContent value="closed">
+                <div className="grid gap-6">
+                  {closedIpos?.map((ipo, index) => {
+                    const raw = ipo?.raw ?? {};
+                    const id = ipo?.id ?? raw?.id ?? index;
+                    const name = ipo?.name ?? ipo?.company_name ?? ipo?.companyName ?? raw?.name ?? '';
+                    const companyName = ipo?.companyName ?? ipo?.company_name ?? raw?.companyName ?? '';
+                    const issueSize = Number(ipo?.issueSize ?? ipo?.issue_size ?? raw?.issueSize ?? 0) || 0;
+                    const lotSize = Number(ipo?.lotSize ?? ipo?.lot_size ?? raw?.lotSize ?? 0) || 0;
+                    const faceValue = Number(ipo?.faceValue ?? ipo?.face_value ?? raw?.faceValue ?? 0) || 0;
+                    const description = ipo?.description ?? raw?.description ?? '';
+                    const openDate = ipo?.openDate ?? ipo?.open_date ?? raw?.openDate ?? null;
+                    const closeDate = ipo?.closeDate ?? ipo?.close_date ?? raw?.closeDate ?? null;
+                    const listingDate = ipo?.listingDate ?? ipo?.listing_date ?? raw?.listingDate ?? null;
+                    const subscriptionTotal = Number(ipo?.subscriptionTotal ?? ipo?.subscription_total ?? raw?.subscriptionTotal ?? 0) || 0;
+                    const subscriptionRetail = Number(ipo?.subscriptionRetail ?? ipo?.subscription_retail ?? raw?.subscriptionRetail ?? 0) || 0;
+                    const subscriptionNii = Number(ipo?.subscriptionNii ?? ipo?.subscription_nii ?? raw?.subscriptionNii ?? 0) || 0;
+                    const subscriptionQib = Number(ipo?.subscriptionQib ?? ipo?.subscription_qib ?? raw?.subscriptionQib ?? 0) || 0;
+                    const status = ipo?.status ?? raw?.status ?? 'Closed';
+                    const listingGains = ipo?.listingGains ?? ipo?.listing_gains ?? raw?.listingGains ?? null;
+
+                    return (
+                      <motion.div key={id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.1 }}>
+                        <Card className="hover:shadow-lg transition-all duration-300">
+                          <CardContent className="p-6">
+                            <div className="flex flex-col lg:flex-row gap-6">
+                              <div className="flex-1">
+                                <div className="flex items-start justify-between mb-4">
+                                  <div>
+                                    <h3 className="text-xl font-semibold mb-2">{name}</h3>
+                                    <p className="text-muted-foreground mb-3">{companyName}</p>
+                                    <div className="flex items-center gap-3">
+                                      <Badge className={getStatusColor(status)}>
+                                        <div className="flex items-center gap-1">
+                                          {getStatusIcon(status)}
+                                          {status}
+                                        </div>
+                                      </Badge>
+                                      <Badge variant="outline">{ipo?.issueType ?? ipo?.issue_type ?? raw?.issueType ?? 'Main IPO'}</Badge>
+                                    </div>
+                                  </div>
+                                  <Building2 className="w-8 h-8 text-muted-foreground" />
+                                </div>
+                                
+                                <p className="text-sm text-muted-foreground mb-4 line-clamp-2">{description}</p>
+
+                                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                                  <div>
+                                    <span className="text-muted-foreground">Price Band:</span>
+                                    <p className="font-medium">{ipo?.priceBand ?? ipo?.price_band ?? raw?.priceBand ?? '—'}</p>
+                                  </div>
+                                  <div>
+                                    <span className="text-muted-foreground">Issue Size:</span>
+                                    <p className="font-medium">{formatCurrency(issueSize)}</p>
+                                  </div>
+                                  <div>
+                                    <span className="text-muted-foreground">Lot Size:</span>
+                                    <p className="font-medium">{lotSize} shares</p>
+                                  </div>
+                                  <div>
+                                    <span className="text-muted-foreground">Face Value:</span>
+                                    <p className="font-medium">₹{faceValue}</p>
+                                  </div>
+                                </div>
+                              </div>
+
+                              <div className="lg:w-80 space-y-4">
+                                <div className="bg-muted/50 rounded-lg p-4">
+                                  <h4 className="font-medium mb-3 flex items-center gap-2">
+                                    <Calendar className="w-4 h-4" />
+                                    Important Dates
+                                  </h4>
+                                  <div className="space-y-2 text-sm">
+                                    <div className="flex justify-between">
+                                      <span className="text-muted-foreground">Open:</span>
+                                      <LocalDate iso={openDate ?? undefined} options={{ day: 'numeric', month: 'short', year: 'numeric' }} />
+                                    </div>
+                                    <div className="flex justify-between">
+                                      <span className="text-muted-foreground">Close:</span>
+                                      <LocalDate iso={closeDate ?? undefined} options={{ day: 'numeric', month: 'short', year: 'numeric' }} />
+                                    </div>
+                                    <div className="flex justify-between">
+                                      <span className="text-muted-foreground">Listing:</span>
+                                      <LocalDate iso={listingDate ?? undefined} options={{ day: 'numeric', month: 'short', year: 'numeric' }} />
+                                    </div>
+                                  </div>
+                                </div>
+
+                                <div className="space-y-2">
+                                  <div className="flex justify-between items-center">
+                                    <span className="text-sm font-medium">Subscription</span>
+                                    <span className="text-sm font-bold">{subscriptionTotal.toFixed(2)}x</span>
+                                  </div>
+                                  <Progress value={Math.min(subscriptionTotal * 20, 100)} className="h-2" />
+                                  <div className="grid grid-cols-3 gap-2 text-xs text-muted-foreground">
+                                    <div>RII: {subscriptionRetail.toFixed(2)}x</div>
+                                    <div>NII: {subscriptionNii.toFixed(2)}x</div>
+                                    <div>QIB: {subscriptionQib.toFixed(2)}x</div>
+                                  </div>
+                                </div>
+
+                              <Button onClick={() => router.push(`/ipo/${ipo.id}`)} className="w-full">
+  View Details
+  <ArrowRight className="w-4 h-4 ml-2" />
+</Button>
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      </motion.div>
+                    );
+                  })}
+                </div>
+              </TabsContent>
+
+              <TabsContent value="listed">
+                <div className="grid gap-6">
+                  {listedIpos?.map((ipo, index) => {
+                    const raw = ipo?.raw ?? {};
+                    const id = ipo?.id ?? raw?.id ?? index;
+                    const name = ipo?.name ?? ipo?.company_name ?? ipo?.companyName ?? raw?.name ?? '';
+                    const companyName = ipo?.companyName ?? ipo?.company_name ?? raw?.companyName ?? '';
+                    const issueSize = Number(ipo?.issueSize ?? ipo?.issue_size ?? raw?.issueSize ?? 0) || 0;
+                    const lotSize = Number(ipo?.lotSize ?? ipo?.lot_size ?? raw?.lotSize ?? 0) || 0;
+                    const faceValue = Number(ipo?.faceValue ?? ipo?.face_value ?? raw?.faceValue ?? 0) || 0;
+                    const description = ipo?.description ?? raw?.description ?? '';
+                    const openDate = ipo?.openDate ?? ipo?.open_date ?? raw?.openDate ?? null;
+                    const closeDate = ipo?.closeDate ?? ipo?.close_date ?? raw?.closeDate ?? null;
+                    const listingDate = ipo?.listingDate ?? ipo?.listing_date ?? raw?.listingDate ?? null;
+                    const subscriptionTotal = Number(ipo?.subscriptionTotal ?? ipo?.subscription_total ?? raw?.subscriptionTotal ?? 0) || 0;
+                    const subscriptionRetail = Number(ipo?.subscriptionRetail ?? ipo?.subscription_retail ?? raw?.subscriptionRetail ?? 0) || 0;
+                    const subscriptionNii = Number(ipo?.subscriptionNii ?? ipo?.subscription_nii ?? raw?.subscriptionNii ?? 0) || 0;
+                    const subscriptionQib = Number(ipo?.subscriptionQib ?? ipo?.subscription_qib ?? raw?.subscriptionQib ?? 0) || 0;
+                    const status = ipo?.status ?? raw?.status ?? 'Listed';
+                    const listingGains = ipo?.listingGains ?? ipo?.listing_gains ?? raw?.listingGains ?? null;
+
+                    return (
+                      <motion.div key={id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.1 }}>
+                        <Card className="hover:shadow-lg transition-all duration-300 border-green-200">
+                          <CardContent className="p-6">
+                            <div className="flex flex-col lg:flex-row gap-6">
+                              <div className="flex-1">
+                                <div className="flex items-start justify-between mb-4">
+                                  <div>
+                                    <h3 className="text-xl font-semibold mb-2">{name}</h3>
+                                    <p className="text-muted-foreground mb-3">{companyName}</p>
+                                    <div className="flex items-center gap-3">
+                                      <Badge className="bg-green-100 text-green-800 hover:bg-green-200">
+                                        <div className="flex items-center gap-1">
+                                          <CheckCircle className="w-4 h-4" />
+                                          {status}
+                                        </div>
+                                      </Badge>
+                                      <Badge variant="outline">{ipo?.issueType ?? ipo?.issue_type ?? raw?.issueType ?? 'Main IPO'}</Badge>
+                                    </div>
+                                  </div>
+                                  <Building2 className="w-8 h-8 text-muted-foreground" />
+                                </div>
+                                
+                                <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
+                                  {description}
+                                </p>
+
+                                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                                  <div>
+                                    <span className="text-muted-foreground">Issue Price:</span>
+                                    <p className="font-medium">₹{Number(ipo?.issuePrice ?? ipo?.issue_price ?? raw?.issuePrice ?? 0) || 0}</p>
+                                  </div>
+                                  <div>
+                                    <span className="text-muted-foreground">Issue Size:</span>
+                                    <p className="font-medium">{formatCurrency(issueSize)}</p>
+                                  </div>
+                                  <div>
+                                    <span className="text-muted-foreground">Lot Size:</span>
+                                    <p className="font-medium">{lotSize} shares</p>
+                                  </div>
+                                  <div>
+                                    <span className="text-muted-foreground">Face Value:</span>
+                                    <p className="font-medium">₹{faceValue}</p>
+                                  </div>
+                                </div>
+                              </div>
+
+                              <div className="lg:w-80 space-y-4">
+                                <div className="bg-muted/50 rounded-lg p-4">
+                                  <h4 className="font-medium mb-3 flex items-center gap-2">
+                                    <Calendar className="w-4 h-4" />
+                                    Important Dates
+                                  </h4>
+                                  <div className="space-y-2 text-sm">
+                                    <div className="flex justify-between">
+                                      <span className="text-muted-foreground">Open:</span>
+                                      <LocalDate iso={openDate ?? undefined} options={{ day: 'numeric', month: 'short', year: 'numeric' }} />
+                                    </div>
+                                    <div className="flex justify-between">
+                                      <span className="text-muted-foreground">Close:</span>
+                                      <LocalDate iso={closeDate ?? undefined} options={{ day: 'numeric', month: 'short', year: 'numeric' }} />
+                                    </div>
+                                    <div className="flex justify-between">
+                                      <span className="text-muted-foreground">Listing:</span>
+                                      <LocalDate iso={listingDate ?? undefined} options={{ day: 'numeric', month: 'short', year: 'numeric' }} />
+                                    </div>
+                                  </div>
+                                </div>
+
+                                {listingGains != null && (
+                                  <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+                                    <div className="flex items-center gap-2 text-green-800">
+                                      <TrendingUp className="w-4 h-4" />
+                                      <span className="font-medium">Listing Gains</span>
+                                    </div>
+                                    <p className="text-green-700 font-bold text-lg">+{listingGains}%</p>
+                                  </div>
+                                )}
+
+                          <Button onClick={() => router.push(`/ipo/${ipo.id}`)} className="w-full">
+  View Details
+  <ArrowRight className="w-4 h-4 ml-2" />
+</Button>
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      </motion.div>
+                    );
+                  })}
+                </div>
+              </TabsContent>
+            </Tabs>
+          )}
         </div>
       </section>
+      {/* Details modal */}
+{selectedIpo && (
+  <div
+    role="dialog"
+    aria-modal="true"
+    className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+  >
+    <div className="w-full max-w-2xl bg-white rounded-lg shadow-lg overflow-auto">
+      <div className="flex justify-between items-center p-4 border-b">
+        <h3 className="text-lg font-semibold">
+          {selectedIpo?.name ?? selectedIpo?.company_name ?? selectedIpo?.companyName}
+        </h3>
+        <button onClick={closeDetails} className="text-muted-foreground">Close</button>
+      </div>
+
+      <div className="p-4 space-y-3">
+        <p className="text-sm text-muted-foreground">{selectedIpo?.description ?? '—'}</p>
+
+        <div className="grid grid-cols-2 gap-4 text-sm">
+          <div>
+            <div className="text-muted-foreground">Price Band</div>
+            <div className="font-medium">{selectedIpo?.priceBand ?? selectedIpo?.price_band ?? '—'}</div>
+          </div>
+          <div>
+            <div className="text-muted-foreground">Issue Price</div>
+            <div className="font-medium">₹{Number(selectedIpo?.issuePrice ?? selectedIpo?.issue_price ?? 0)}</div>
+          </div>
+          <div>
+            <div className="text-muted-foreground">Lot Size</div>
+            <div className="font-medium">{Number(selectedIpo?.lotSize ?? selectedIpo?.lot_size ?? 0)} shares</div>
+          </div>
+          <div>
+            <div className="text-muted-foreground">Issue Size</div>
+            <div className="font-medium">{formatCurrency(Number(selectedIpo?.issueSize ?? selectedIpo?.issue_size ?? 0))}</div>
+          </div>
+        </div>
+
+        <div className="pt-3 border-t flex justify-end gap-2">
+          <Button variant="ghost" onClick={closeDetails}>Close</Button>
+          <Button onClick={() => {
+            // example: forward to apply or details page
+            // you can implement apply logic or router.push here
+            closeDetails();
+            alert('Implement apply/navigation logic here');
+          }}>
+            Apply / Next
+          </Button>
+        </div>
+      </div>
+    </div>
+  </div>
+)}
     </div>
   );
 }
